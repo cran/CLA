@@ -1,0 +1,6 @@
+##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
+
+* Before release of package
+** DONE CLA() should return a (S3) class, "CLA"
+*** TODO --> print() and plot() (S3) methods**** plot(): plot efficient frontier
+** check arguments  e.g., lB <= uB, sum upper Bounds >= 1

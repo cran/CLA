@@ -1,0 +1,15 @@
+
+## NOT importing fGarch here -- only depending on using muSigmaGarch()
+
+importFrom("stats",
+           cor, predict, uniroot)
+## importFrom(, ..)
+## not yet on CRAN : importFrom("sfsmisc", funEnv)
+
+export(CLA
+       , MS
+       , findSig, findMu
+       , muSigmaGarch
+       )
+
+S3method(print, CLA)
