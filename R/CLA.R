@@ -194,4 +194,36 @@ print.CLA <- function(x, ...) {
     invisible(x)
 }
 
-## TODO:  plot method -- efficient frontier
+### TODO:  plot method -- efficient frontier
+
+## As basically from  .../YanhaoShi/R/Functions/Plot.R :
+MS_plot <- function(ms, type = "o",
+                    main = "Efficient Frontier",
+                    xlab = expression(sigma(w)),
+                    ylab = expression(mu(w)),
+                    col = adjustcolor("blue", alpha.f = 0.5),
+                    pch = 16, ...) {
+    ## list of weights_set, legend...
+    stopifnot(is.matrix(ms), ncol(ms) == 2)
+    plot(ms[,"Sig"], ms[,"Mu"], type=type, pch=pch, col=col,
+         xlab = xlab, ylab=ylab, main=main, ...)
+}
+
+
+## FIXME: --> see also in ../man/plot.CLA.Rd
+## -----
+## 0) Use findMu() and findSig() to draw the lines *between*
+## 1) Learn from Tobias Setz to plot the lower part of the feasible region
+## 2) Better title, using 'call'
+## 3) mark some critical points particularly
+## 4) give information about the *number* critical points / weights sets
+## 5) consider using a  'add = FALSE' argument and then use 'lines()'
+plot.CLA <- function(x, type = "o", main = "Efficient Frontier",
+                    xlab = expression(sigma(w)),
+                    ylab = expression(mu(w)),
+                    col = adjustcolor("blue", alpha.f = 0.5),
+                    pch = 16, ...) {
+    stopifnot(is.matrix(ms <- x$MS_weights))
+    plot(ms[,"Sig"], ms[,"Mu"], type=type, pch=pch, col=col,
+         xlab=xlab, ylab=ylab, main=main, ...)
+}

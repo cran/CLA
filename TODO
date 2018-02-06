@@ -1,6 +1,16 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* Before release of package
-** DONE CLA() should return a (S3) class, "CLA"
-*** TODO --> print() and plot() (S3) methods**** plot(): plot efficient frontier
+* ASAP (no longer "Before release of package")
 ** check arguments  e.g., lB <= uB, sum upper Bounds >= 1
+** TODO References --> (mostly done)
+*** DONE 1) References from the thesis, including the "buried" python-paper with *WRONG* algo
+*** TODO 2) Master thesis: I'd like the thesis to be on our web page
+** DONE CLA() should return a (S3) class, "CLA" w/ print() and plot() methods
+** TODO findMu() and findSig() regression check examples *before* much changing R/findSigMu.R
+** TODO Improve plot() method, using hyperbolic interpolation see  R/CLA.R  man/plot.CLA.Rd
+** TODO  A. Norring's Masters thesis has a small 12-asset example (from a published source).
+   We should add that as a minimally small data set to use in examples,
+   e.g. plot(). His thesis is in ~/Betreute-Arbeiten/YanhaoShi/Previous_Work/
+
+* With more time, also, e.g., for a short R Journal paper
+** SparseMatrix plot of the weights

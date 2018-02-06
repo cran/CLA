@@ -18,8 +18,12 @@ MS(weights_set, mu, covar)
   \item{covar}{covariance matrix of (log) returns (identical to
     \emph{argument} of \code{\link{CLA}()}).}
 }
-%% \details{
-%% }
+\details{
+  These are trivially computable from the \code{\link{CLA}()}'s result.
+  To correctly \emph{interpolate} this, \dQuote{hyperbolic}
+  interpolation is needed, provided by the \code{\link{findSig}} and
+  \code{\link{findMu}} functions.% say more, here or there
+}
 \value{
   a \code{\link{list}} with components
   \item{Sig}{numeric vector of length \eqn{m} of standard deviations,

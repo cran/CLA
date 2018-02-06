@@ -3,9 +3,14 @@
 
 importFrom("stats",
            cor, predict, uniroot)
-## importFrom(, ..)
+
+importFrom("grDevices", adjustcolor)
+
+importFrom("graphics", plot)# including the plot.default() method
+
 ## not yet on CRAN : importFrom("sfsmisc", funEnv)
 
+## -------------- CLA  Exports -----------------------
 export(CLA
        , MS
        , findSig, findMu
@@ -13,3 +18,4 @@ export(CLA
        )
 
 S3method(print, CLA)
+S3method(plot, CLA)

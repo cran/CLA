@@ -3,6 +3,12 @@ require(CLA)
 b64 <- .Machine$sizeof.pointer == 8
 cat(sprintf("%d bit platform type '%s'\n", if(b64) 64 else 32, .Platform$OS.type))
 (nonWindows <- .Platform$OS.type != "windows")
+arch <- Sys.info()[["machine"]]
+.M <- .Machine; str(.M[grep("^sizeof", names(.M))]) ## differentiate long-double..
+## Do we have 64bit but no-long-double ?
+b64nLD <- (arch == "x86_64" && .M$sizeof.longdouble != 16)
+if(b64nLD) arch <- paste0(arch, "--no-long-double")
+arch
 
 data(muS.sp500)
 
@@ -104,18 +110,39 @@ b32.n0[nn]  <- b64.n0[nn] + 1L
 nn <- c("AET", "BCR", "CI", "CL", "ED", "FE", "HAL", "MCD", "SII", "SYK")
 b32.n0[nn]  <- b64.n0[nn] - 1L
 
+## 64-bit Linux  -no-long-double:
+b64nLD.n0 <- b64.n0
+nn <- c("AZO", "BAX", "BNI", "CCE", "DVN", "GILD", "INTU", "JNJ", "LH",
+        "MDT", "NOC", "PBG", "SYMC")
+b64nLD.n0[nn] <- b64.n0[nn] + 1L
+nn <- c("ADSK", "BCR", "BDX", "BUD", "CTL", "FE", "MCD", "SII", "SYK")
+b64nLD.n0[nn] <- b64.n0[nn] - 1L
+b64nLD.n0[["XTO"]] <- 99L # = b...  - 3L
+
+non.0.TARG <- if(b64) { if(b64nLD) b64nLD.n0 else b64.n0
+              } else b32.n0
+
 ## see on all platforms what we get;  typically no diff on 64bit
-if(all(non.0.assets ==  if(b64) b64.n0 else b32.n0)) { ## show differences:
+if(all(non.0.assets == non.0.TARG)) { ## show differences:
+    cat("Asset results == non.0.TARG;  showing differences b32 - b64 :\n")
     print(table(b32.n0 -b64.n0))
     dput(names(b64.n0)[b32.n0 -b64.n0 == +1])
     dput(names(b64.n0)[b32.n0 -b64.n0 == -1])
+} else {
+    cat("\n'non.0.assets' differing from non.0.TARG:\n")
+    cat("+1:\n"); dput(names(b64.n0)[non.0.assets - non.0.TARG == +1])
+    cat("-1:\n"); dput(names(b64.n0)[non.0.assets - non.0.TARG == -1])
+    if(any(isB <- abs(non.0.assets - non.0.TARG) > 1)) {
+        cat("more different, showing differences:\n")
+        dput((non.0.assets - non.0.TARG)[isB])
+    }
 }
 
 ## They have the same names and only differ by  +/- 1:
 stopifnot(
     identical(names(b64.n0), names(b32.n0))
     ##                              ______      ______
-  , if(b64) identical(non.0.assets, b64.n0)
+  , if(b64) identical(non.0.assets, non.0.TARG)
     else if(nonWindows) identical(non.0.assets, b32.n0)
     else ## 32-bit Windows
         TRUE ## for now
