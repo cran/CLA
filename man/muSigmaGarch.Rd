@@ -39,9 +39,10 @@ muSigmaGarch(x, formula = ~garch(1, 1), cond.dist = "std", trace = FALSE,
 \examples{
 if(requireNamespace("FRAPO")) {
   data(NASDAQ, package = "FRAPO")
-  set.seed(17)
   ## 12 randomly picked stocks from NASDAQ data
-  iS <- sample(ncol(NASDAQ), 12)
+  iS <- if(FALSE) {  ## created (w/ warning, in new R)  by
+    RNGversion("3.5.0"); set.seed(17); iS <- sample(ncol(NASDAQ), 12)
+  } else c(341L, 2126L, 1028L, 1704L, 895L, 1181L, 454L, 410L, 1707L, 425L, 950L, 5L)
   X. <- NASDAQ[, iS]
   muSig <- muSigmaGarch(X.)
   stopifnot(identical(names(muSig$mu), names(NASDAQ)[iS]),

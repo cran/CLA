@@ -37,8 +37,10 @@ findMu(Sig0, result, covar, tol.unir = 1e-06, equal.tol = 1e-06)
 \examples{
 data(muS.sp500)
 ## Full data taking too much time for example
+if(getRversion() >= "3.6") .Rk <- RNGversion("3.5.0") # for back compatibility & warning
 set.seed(2016)
 iS <- sample.int(length(muS.sp500$mu), 17)
+if(getRversion() >= "3.6") do.call(RNGkind, as.list(.Rk)) # revert
 cov17 <- muS.sp500$covar[iS, iS]
 CLsp.17 <- CLA(muS.sp500$mu[iS], covar=cov17, lB=0, uB = 1/2)
 CLsp.17 # 16 turning points

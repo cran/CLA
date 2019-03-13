@@ -24,10 +24,10 @@ initAlgo <- function(mu, lB, uB ) {
 ## getMatrices -----------------------------------------------------------------
 getMatrices <- function(mu, covar, w, f) {
     ## Slice covarF,covarFB,covarB,muF,muB,wF,wB
-    covarF <- covar[f,f]
+    covarF <- covar[f,f , drop=FALSE]
     muF <- mu[f]
     b <- seq_along(mu)[-f]
-    covarFB <- covar[f,b]
+    covarFB <- covar[f,b , drop=FALSE]
     wB <- w[b]
     list(covarF = covarF, covarFB = covarFB, muF = muF, wB = wB)
 }
@@ -43,7 +43,8 @@ computeW <- function(lam, inv, wB) {
     ## 1) compute gamma
     g <- (-lam * inv.s[2] + (1- sum(wB) + inv.s[3]))/inv.s[1]
     ## 2) compute free weights
-    list(wF = - inv[,3] + g * inv[,1] + lam * inv[,2], gamma = g)
+    list(wF = - inv[,3] + g * inv[,1] + lam * inv[,2],
+         gamma = g)
 }
 
 ## computeLambda --------------------------------------------------------------
@@ -80,7 +81,7 @@ MS <- function(weights_set, mu, covar) {
 
 
 CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
-                give.MS = TRUE, keep.names = TRUE) {
+                give.MS = TRUE, keep.names = TRUE, trace = 0) {
     ## minimal argument checks
     cl <- match.call()
     n <- length(mu)
@@ -93,15 +94,16 @@ CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
     ans <- initAlgo(mu, lB, uB)
     f <- ans$index
     w <- ans$weights
-    weights_set <- w  # store solution
-    lambdas <- NA  # The first step has no lambda or gamma, add NA instead.
-    gammas <- NA
-    free_indices <- list(f)
+    ## initialize result parts
+    lambdas <- gammas  <- numeric()
+    weights_set <- array(dim = c(n,0L))
+    free_indices <- list()
     lam <- 1 # set non-zero lam
-    while ( lam > 0 && length(f) < length(mu)) {
+    while (lam > 0 && (nf <- length(f)) <= length(mu)) {
+      if(trace) cat(sprintf("while(lam = %g > 0 & ..): |f|=%d ..\n", lam, nf))
       ## 1) case a): Bound one free weight  F -> B
       l_in <- 0
-      if(length(f) > 1 ) {
+      if(nf > 1L) {
         compl <- computeLambda(wB = w[-f], inv = inv, # inv from last step k (k > 1)
                                i = f, bi.input = cbind(lB, uB))
         lam_in <- compl$lambda
@@ -119,49 +121,51 @@ CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
         computeInv(get_i)
       })
 
-      fi <- length(f) + 1
-      lam_out <- sapply(seq_along(b), function(i) {
-        computeLambda(wB = w[b[-i]], inv = inv_list[[i]],
-                      i = fi, bi.input = w[b[i]])
-      })
-
-      if (length(lambdas) > 1 && any(!(sml <- lam_out < lam*(1-tol.lambda)))) {
-        lam_out <- lam_out[sml]
-        b       <- b      [sml]
-        inv_list <- inv_list[sml]
+      if(nf < length(mu)) {
+          fi <- nf + 1L
+          lam_out <- sapply(seq_along(b), function(i) {
+              computeLambda(wB = w[b[-i]], inv = inv_list[[i]],
+                            i = fi, bi.input = w[b[i]])
+          })
+          if (length(lambdas) && any(!(sml <- lam_out < lam*(1-tol.lambda)))) {
+              lam_out <- lam_out[sml]
+              b       <- b      [sml]
+              inv_list <- inv_list[sml]
+          }
+          k <- which.max(lam_out)
+          i_out <- b      [k] # one only !
+          l_out <- lam_out[k]
+          inv_out <- inv_list[[k]]
+      } else { ## length(f) == length(mu)  <==>  |b| = 0
+          l_out  <- -Inf
       }
-      k <- which.max(lam_out)
-      i_out <- b      [k] # one only !
-      l_out <- lam_out[k]
-      inv_out <- inv_list[[k]]
-
       ## 3) decide lambda
-      lam <- max(l_in, l_out, 0)
+      lam <- max(l_in, l_out)
+      if(trace) cat(sprintf("l_{in,out}=(%g,%g) => new candidate lam=%g\n",
+                            l_in, l_out, lam))
       if(lam > 0) { # remove i_in from f; or add i_out into f
-        if(l_in > l_out ) {
+        if(l_in > l_out) {
           w[i_in] <- bi_in  # set value at the correct boundary
           f <- f[f != i_in]
           getM <- getMatrices(mu, covar, w, f)
           inv <- computeInv(getM)
         }
         else {
-          f <- c(f,i_out)
+          f <- c(f, i_out)
           inv <- inv_out
         }
-        compW <- computeW(lam, inv = inv, wB = w[-f])
       }
-      else{ # 4) if max(l_in, l_out) < 0, "stop" when at the min var solution!
-        compW <- computeW(lam = lam, inv = inv, wB = w[-f])
+      else{ # 4) if max(l_in, l_out) <= 0, "stop" when at the min var solution!
+        lam <- 0
         ## muF = 0 not necessary, get1 replaced by getM (ie getM from previous step)
       }
-
-      wF <- compW$wF
-      g <- compW$gamma
-      w[f] <- wF[seq_along(f)]
+      compW <- computeW(lam, inv = inv, wB = w[-f])
+      g    <- compW$gamma
+      w[f] <- compW$wF[seq_along(f)]
 
       lambdas <- c(lambdas, lam)
-      weights_set <- cbind(weights_set, w, deparse.level = 0L) # store solution
       gammas <- c(gammas, g)
+      weights_set <- cbind(weights_set, w, deparse.level = 0L) # store solution
       free_indices <- c(free_indices, list(sort(f)))
     }# end While
 
@@ -194,7 +198,6 @@ print.CLA <- function(x, ...) {
     invisible(x)
 }
 
-### TODO:  plot method -- efficient frontier
 
 ## As basically from  .../YanhaoShi/R/Functions/Plot.R :
 MS_plot <- function(ms, type = "o",

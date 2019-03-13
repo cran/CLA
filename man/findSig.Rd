@@ -37,8 +37,10 @@ findSig(Mu0, result, covar, equal.tol)
 \examples{
 data(muS.sp500)
 ## Full data taking too much time for example: Subset of n=21:
+if(getRversion() >= "3.6") .Rk <- RNGversion("3.5.0") # for back compatibility & warning
 set.seed(2018)
 iS <- sample.int(length(muS.sp500$mu), 21)
+if(getRversion() >= "3.6") do.call(RNGkind, as.list(.Rk)) # revert
 cov21 <- muS.sp500$covar[iS, iS]
 CLsp.21 <- CLA(muS.sp500$mu[iS], covar=cov21, lB=0, uB = 1/2)
 CLsp.21 # 14 turning points

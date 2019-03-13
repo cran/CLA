@@ -14,7 +14,7 @@
 }
 \usage{
 CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
-    give.MS = TRUE, keep.names = TRUE)
+    give.MS = TRUE, keep.names = TRUE, trace = 0)
 }
 \arguments{
   \item{mu}{numeric vector of length \code{n} containing the expected
@@ -29,6 +29,8 @@ CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
     should be computed (and returned) as well.}
   \item{keep.names}{\code{\link{logical}} indicating if the
     \code{weights_set} matrix should keep the (asset) \code{names(mu)}.}
+  \item{trace}{an integer (or \code{\link{logical}}) indicating if and
+    how much diagnostic or progress output should be produced.}
 }
 \details{
   The current implementation of the CLA is based (via Norring's)
@@ -49,8 +51,8 @@ CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
     corresponding to the \eqn{m} steps that the CLA has completed or the
     \eqn{m} \dQuote{turning points} it has computed.}
   \item{free_indices}{a \code{\link{list}} of length \code{m}, the
-    \eqn{k}-th component with the indices in \eqn{\{1,\dots,n\}} of
-    those assets whose weights were not at the boundary afater ... }
+    \eqn{k}-th component with the indices in \eqn{{1,\dots,n}} of
+    those assets whose weights were not at the boundary after ... }% <<< FIXME
   \item{gammas}{numeric vector of length \eqn{m} of the values
     \eqn{\gamma_k}{gamma[k]} for CLA step \eqn{k}, \eqn{k=1,\dots,n}.}
   \item{lambdas}{numeric vector of length \eqn{m} of the Lagrange parameters
@@ -75,7 +77,7 @@ CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
   %% \doi{10.1007/BF02282055}.
 
   Niedermayer, A. and Niedermayer, D. (2010)
-  Applying markowitz’s critical line algorithm, in J. B. Guerard (ed.),
+  Applying Markowitz’s Critical Line Algorithm, in J. B. Guerard (ed.),
   Handbook of Portfolio Construction, Springer; chapter 12, 383--400;
   \doi{10.1007/978-0-387-77439-8_12}.
 
@@ -83,6 +85,10 @@ CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
   An open-source implementation of the critical-line algorithm for portfolio
   optimization, \emph{Algorithms} \bold{6}(1), 169--196;
   \doi{10.3390/a6010169},
+
+  Yanhao Shi (2017)
+  Implementation and applications of critical line algorithm for
+  portfolio optimization; unpublished Master's thesis, ETH Zurich.
 }
 %% \note{
 %% }
