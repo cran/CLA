@@ -1,50 +1,8 @@
 require(CLA)
 
-b64 <- .Machine$sizeof.pointer == 8
-cat(sprintf("%d bit platform type '%s'\n", if(b64) 64 else 32, .Platform$OS.type))
-(nonWindows <- .Platform$OS.type != "windows")
-arch <- Sys.info()[["machine"]]
-.M <- .Machine; str(.M[grep("^sizeof", names(.M))]) ## differentiate long-double..
-## Do we have 64bit but no-long-double ?
-b64nLD <- (arch == "x86_64" && .M$sizeof.longdouble != 16)
-if(b64nLD) arch <- paste0(arch, "--no-long-double")
-arch
-
-## <---> sync with ~/R/Pkgs/robustbase/tests/mc-strict.R
-##                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-sInfo <- sessionInfo()
-if(!exists("osVersion")) osVersion <- sInfo$running
-cat("osVersion:", osVersion, "\n")
-if(!is.null(osVersion)) "Fedora" # last resort
-BLAS.is.LAPACK <- sInfo$BLAS == sInfo$LAPACK
-cat("osVersion:", osVersion, "| ",
-    'BLAS "is" Lapack:', BLAS.is.LAPACK, "\n")
-
-## Find out if we are running Micrsoft R Open
-is.MS.Ropen <- {
-    file.exists(Rpr <- file.path(R.home("etc"), "Rprofile.site")) &&
-    length(lnsRpr <- readLines(Rpr)) &&
-        ## length(grep("[Mm]icrosoft", lnsRpr)) > 3 # MRO 3.5.1 has '20' times "[Mm]icrosoft"
-    length(grep("Microsoft R Open", lnsRpr, fixed=TRUE, value=TRUE)) > 0 ## MRO 3.5.1 has it twice
-}
-if(is.MS.Ropen) cat("We are running 'Microsoft R Open'\n")
-
-## I'd really want
-##
-##    strict <- we_are_using_Rs_own_BLAS_and_Lapack()  [ ==> BLAS != Lapack ]
-##
-## Actually the following is currently (2019-03)  equivalent to
-## strict <- !(using ATLAS || OpenBLAS || MKL )
-if(TRUE) {
-    strict <- !BLAS.is.LAPACK && !is.MS.Ropen
-} else { ## workaround:
-    strict <- print(Sys.info()[["user"]]) == "maechler"# actually
-    ## but not when testing with /usr/bin/R [OpenBLAS!] (as "maechler"):
-    if(strict && substr(osVersion, 1,6) == "Fedora" && R.home() == "/usr/lib64/R")
-        strict <- FALSE
-}
-cat("strict:", strict, "\n")
-
+source(system.file("xtraR", "platform-sessionInfo.R", # <<- ../inst/xtraR/platform-sessionInfo.R
+		   package = "CLA", mustWork=TRUE)) # moreSessionInfo(), withAutoprint() ..
+mS <- moreSessionInfo(print. = TRUE)
 
 data(muS.sp500)
 
@@ -93,8 +51,6 @@ if(doExtras) {
 
 op <- options(width = max(500, getOption("width"))) # then it actually fits
 
-if(getRversion() < "3.4.0") withAutoprint <- function(x, ...) x
-
 if(require(Matrix)) withAutoprint(local = FALSE, {
     ## visualize how weights change "along turning points"
     spWts <- Matrix(CLs5c.0.120$weights_set, sparse=TRUE)
@@ -129,6 +85,7 @@ if(differWts) {
         ncol(wtsn0.ref), "\n")
     strict <- FALSE # !
 } else {
+    strict <- mS$strictR
     stopifnot(all.equal(target = wtsn0.ref, current = wts.non0,
                         tol = 1e-13))
 }
@@ -167,7 +124,7 @@ nn <- c("ADSK", "BCR", "BDX", "BUD", "CTL", "FE", "MCD", "SII", "SYK")
 b64nLD.n0[nn] <- b64.n0[nn] - 1L
 b64nLD.n0[["XTO"]] <- 99L # = b...  - 3L
 
-non.0.TARG <- if(b64) { if(b64nLD) b64nLD.n0 else b64.n0
+non.0.TARG <- if(mS$ b64) { if(mS$ b64nLD) b64nLD.n0 else b64.n0
               } else b32.n0
 
 ## see on all platforms what we get;  typically no diff on 64bit *and* using R's BLAS/Lapack
@@ -215,8 +172,8 @@ if(all(non.0.assets == non.0.TARG)) { ## show differences:
 stopifnot(exprs = {
     identical(names(b64.n0), names(b32.n0))
 
-    if(b64) !strict || identical(non.0.assets, non.0.TARG) # identical(*) fails on ATLAS, MKL, OpenBLAS
-    else if(nonWindows) identical(non.0.assets, b32.n0)
+    if(mS$ b64) !strict || identical(non.0.assets, non.0.TARG) # identical(*) fails on ATLAS, MKL, OpenBLAS
+    else if(.Platform$OS.type != "windows") identical(non.0.assets, b32.n0)
     else ## 32-bit Windows
         TRUE ## for now
 
