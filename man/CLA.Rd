@@ -13,7 +13,9 @@
   debugged compared to earlier ones.
 }
 \usage{
-CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
+CLA(mu, covar, lB, uB,
+    check.cov = TRUE, check.f = TRUE,
+    tol.lambda = 1e-07,
     give.MS = TRUE, keep.names = TRUE, trace = 0)
 }
 \arguments{
@@ -21,8 +23,16 @@ CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
     return \eqn{E[R_i]} for \eqn{1=1,2,\dots,n}.}
   \item{covar}{the \eqn{n \times n}{n x n} covariance matrix of the
     returns, must be positive definite.}
+
   \item{lB, uB}{vectors of length \code{n} with lower and upper bounds
     for the asset weights.}
+
+  \item{check.cov}{\code{\link{logical}} indicating if the \code{covar}
+    matrix should be checked to be positive definite.}
+  \item{check.f}{\code{\link{logical}} indicating if a warning should be
+    produced when the algorithm cannot produce a new (smaller) lambda even
+    though there are still \bold{f}ree weights to be chosen.}
+
   \item{tol.lambda}{the tolerance when checking for lambda changes or
     being zero.}
   \item{give.MS}{\code{\link{logical}} indicating if \code{\link{MS}()}
@@ -89,6 +99,7 @@ CLA(mu, covar, lB, uB, tol.lambda = 1e-07,
   Yanhao Shi (2017)
   Implementation and applications of critical line algorithm for
   portfolio optimization; unpublished Master's thesis, ETH Zurich.
+  % ~/Betreute-Arbeiten/YanhaoShi/MasterThesis-YanhaoShi.pdf
 }
 %% \note{
 %% }
@@ -115,6 +126,19 @@ if(require(Matrix)) { ## visualize how weights change "along turning points"
              main = "CLA(muS.sp500 <random_sample(size=24)>) $ weights_set",
              xlab = "turning point", ylab = "asset number"))
 }
+
+## A 3x3 example (from real data) where CLA()'s original version failed
+## and  'check.f = TRUE' produces a warning :
+mc3 <- list(
+    mu = c(0.0408, 0.102, -0.023),
+    cv = matrix(c(0.00648, 0.00792, 0.00473,
+                  0.00792, 0.0334,  0.0121,
+                  0.00473, 0.0121, 0.0793), 3, 3,
+           dimnames = list(NULL,
+                           paste0(c("TLT", "VTI","GLD"), ".Adjusted"))))
+
+rc3 <- with(mc3,  CLA(mu=mu, covar=cv, lB=0, uB=1, trace=TRUE))
+
 }
 \keyword{optimize}
 \keyword{arith}

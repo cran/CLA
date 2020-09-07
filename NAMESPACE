@@ -8,6 +8,8 @@ importFrom("grDevices", adjustcolor)
 
 importFrom("graphics", plot)# including the plot.default() method
 
+importFrom("utils", str)# for 'CLA(*, trace >= 2)'
+
 ## not yet on CRAN : importFrom("sfsmisc", funEnv)
 
 ## -------------- CLA  Exports -----------------------

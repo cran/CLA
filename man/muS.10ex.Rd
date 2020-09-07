@@ -18,8 +18,8 @@ data("muS.10ex")
   }
 }
 \source{
-  From \url{http://www.quantresearch.info/CLA_Data.csv.txt},
-  by López de Prado.
+  From \file{http://www.quantresearch.info/CLA_Data.csv.txt} (URL no longer
+  working, Aug.2020!) by López de Prado.
 }
 \references{
   Markowitz, H. M. (1987, 1st ed.) and

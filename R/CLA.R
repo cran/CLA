@@ -23,7 +23,7 @@ initAlgo <- function(mu, lB, uB ) {
 
 ## getMatrices -----------------------------------------------------------------
 getMatrices <- function(mu, covar, w, f) {
-    ## Slice covarF,covarFB,covarB,muF,muB,wF,wB
+    ## Slice covarF,covarFB,covarB, muF,muB, wF,wB
     covarF <- covar[f,f , drop=FALSE]
     muF <- mu[f]
     b <- seq_along(mu)[-f]
@@ -80,7 +80,7 @@ MS <- function(weights_set, mu, covar) {
 }
 
 
-CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
+CLA <- function(mu, covar, lB, uB, check.cov = TRUE, check.f = TRUE, tol.lambda = 1e-7,
                 give.MS = TRUE, keep.names = TRUE, trace = 0) {
     ## minimal argument checks
     cl <- match.call()
@@ -90,6 +90,20 @@ CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
     stopifnot(is.numeric(mu), is.matrix(covar), identical(dim(covar), c(n,n)),
               is.numeric(lB), length(lB) == n,
               is.numeric(uB), length(uB) == n, lB <= uB)# and in [0,1]
+    if(check.cov) {
+        ## if the covar matrix is *not* positive (semi)definite, CLA()
+        ## may produce a "solution" which does not fulfill desired properties
+
+        ## 1) Check  kappa() or rcond() ... if they are "large", check the eigen values
+
+        " __ FIXME __ "
+
+        ## 2)
+        ev <- eigen(covar, only.values=TRUE)$values
+
+        if(any(ev < 0))
+            warning("covariance matrix 'covar' has negative eigenvalues")
+    }
     ## Compute the turning points, free sets and weights
     ans <- initAlgo(mu, lB, uB)
     f <- ans$index
@@ -97,21 +111,24 @@ CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
     ## initialize result parts
     lambdas <- gammas  <- numeric()
     weights_set <- array(dim = c(n,0L))
-    free_indices <- list()
+    eLambdas <- free_indices <- list()
     lam <- 1 # set non-zero lam
     while (lam > 0 && (nf <- length(f)) <= length(mu)) {
-      if(trace) cat(sprintf("while(lam = %g > 0 & ..): |f|=%d ..\n", lam, nf))
+      if(trace) cat(sprintf("while(lam = %g > 0 && |f|=%d <= |mu|=%d)\n", lam, nf, length(mu)))
       ## 1) case a): Bound one free weight  F -> B
       l_in <- 0
       if(nf > 1L) {
         compl <- computeLambda(wB = w[-f], inv = inv, # inv from last step k (k > 1)
                                i = f, bi.input = cbind(lB, uB))
+        if(trace >= 2)  { cat(" case a) : computeLambda(): "); str(compl) }
         lam_in <- compl$lambda
         bi     <- compl$bi
         k <- which.max(lam_in)
         i_in  <-      f[k]
         bi_in <-     bi[k]
         l_in  <- lam_in[k]
+        if(trace >= 2)  cat(sprintf("  [a) cont.]: k = which.max(lam_in) = %d; l_in = %g\n",
+                                    k, l_in))
       }
 
       ## 2) case b): Free one bounded weight  B -> F
@@ -120,28 +137,48 @@ CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
         get_i <- getMatrices(mu, covar, w, c(f,bi))
         computeInv(get_i)
       })
-
-      if(nf < length(mu)) {
+      if(trace >= 2)  { cat(sprintf(" case b) : \"B -> F\": b = (%s);    inv_list:\n",
+                                    paste(b,collapse=", "))) ; str(inv_list) }
+      if(nf < length(mu)) { # still have free weights
           fi <- nf + 1L
-          lam_out <- sapply(seq_along(b), function(i) {
+          lam_out <- sapply(seq_along(b), function(i)
               computeLambda(wB = w[b[-i]], inv = inv_list[[i]],
-                            i = fi, bi.input = w[b[i]])
-          })
-          if (length(lambdas) && any(!(sml <- lam_out < lam*(1-tol.lambda)))) {
+                            i = fi, bi.input = w[b[i]]))
+          if(trace) {
+              cat(sprintf("|f| < |mu|: computeLambda() => lam_out[1:%d]%s",
+                          length(b), if(trace >= 2) "= " else ""))
+              if(trace >= 2) print(lam_out)
+          }
+          if (length(lambdas) && !all(sml <- lam_out < lam*(1-tol.lambda))) {
+              tol.l <- tol.lambda
+              while((!any(sml)) && 2*tol.l >= .Machine$double.neg.eps) # empty
+                  ## extreme: new lam_out are *not* smaller than lam(1-eps)
+                  sml <- lam_out < lam*(1 - (tol.l <- tol.l/2))
+              if(trace) cat("  new 'sml' case: which(sml) = ",
+                            if(any(sml)) paste(which(sml), collapse=", ")
+                            else "{} (i.e. empty)", "\n")
               lam_out <- lam_out[sml]
               b       <- b      [sml]
               inv_list <- inv_list[sml]
           }
-          k <- which.max(lam_out)
-          i_out <- b      [k] # one only !
-          l_out <- lam_out[k]
-          inv_out <- inv_list[[k]]
+          if((hasLam <- length(lam_out) > 0)) {
+              k <- which.max(lam_out)
+              if(trace) cat("   --> new k = which.max(lam_out): ", k, "\n")
+              i_out <- b      [k] # one only !
+              l_out <- lam_out[k]
+              inv_out <- inv_list[[k]]
+          } else { # 'empty' --- should not happen typically, but see 'mc3' ex.
+              if(check.f)
+                  warning("Had free weights but could not improve solution")
+              l_out  <- -Inf
+          }
       } else { ## length(f) == length(mu)  <==>  |b| = 0
+          hasLam <- FALSE
           l_out  <- -Inf
       }
       ## 3) decide lambda
       lam <- max(l_in, l_out)
-      if(trace) cat(sprintf("l_{in,out}=(%g,%g) => new candidate lam=%g\n",
+      if(trace) cat(sprintf("  l_{in,out}=(%g,%g) => new candidate lam=%g\n",
                             l_in, l_out, lam))
       if(lam > 0) { # remove i_in from f; or add i_out into f
         if(l_in > l_out) {
@@ -164,17 +201,19 @@ CLA <- function(mu, covar, lB, uB, tol.lambda = 1e-7,
       w[f] <- compW$wF[seq_along(f)]
 
       lambdas <- c(lambdas, lam)
+      if(!hasLam)
+          eLambdas <- c(eLambdas, lam)
       gammas <- c(gammas, g)
       weights_set <- cbind(weights_set, w, deparse.level = 0L) # store solution
       free_indices <- c(free_indices, list(sort(f)))
     }# end While
 
     if(keep.names) rownames(weights_set) <- names(mu)
-#### FIXME: This change also needs changes in the ../tests/SP500-ex.R !
     structure(class = "CLA",
               list(weights_set = weights_set,
                    free_indices = free_indices,
                    gammas = gammas, lambdas = lambdas,
+                   emptyLambdas =  eLambdas,
                    MS_weights = if(give.MS)
                            MS(weights_set = weights_set, mu = mu, covar = covar),
                    call = cl))
@@ -196,6 +235,11 @@ print.CLA <- function(x, ...) {
     ## TODO better, e.g., summarizing the number "active assets"
     ## and those with non-0 weights -- only if lower bounds were (mostly) 0
     invisible(x)
+}
+
+## TODO: see ../inst/issues/nonPD/many_NA_data__non-PD-covmat.R : cbind(...)
+if(FALSE)
+summary.CLA <- function(object, ...) {
 }
 
 
@@ -221,6 +265,7 @@ MS_plot <- function(ms, type = "o",
 ## 3) mark some critical points particularly
 ## 4) give information about the *number* critical points / weights sets
 ## 5) consider using a  'add = FALSE' argument and then use 'lines()'
+## 6) "label" turning points by #{assets}, or plot these additionally, or use axis 4
 plot.CLA <- function(x, type = "o", main = "Efficient Frontier",
                     xlab = expression(sigma(w)),
                     ylab = expression(mu(w)),
@@ -230,3 +275,5 @@ plot.CLA <- function(x, type = "o", main = "Efficient Frontier",
     plot(ms[,"Sig"], ms[,"Mu"], type=type, pch=pch, col=col,
          xlab=xlab, ylab=ylab, main=main, ...)
 }
+
+## TODO 2nd plot: --> ../inst/issues/nonPD/many_NA_data__non-PD-covmat.R

@@ -4,21 +4,33 @@
 \title{News for \R Package \pkg{CLA}}% MM: look into ../svn-log-from.all
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
-\section{Changes in version 0.95-1 (2019-..-..)}{
+\section{Changes in version 0.96-0 (2020-09-06)}{
   \subsection{New Features}{
     \itemize{
-      \item (none)
+      \item \code{CLA(mu, covar, ..)} gets new option \code{check.cov} which by default
+      is \code{TRUE} and hence checks if the covariance matrix \code{covar}
+      is positive definite.
     }
   }
   \subsection{Bug Fixes}{
     \itemize{
-      \item (none)
+      \item \code{CLA()} for small cases may have "empty" new lambda even
+      when there free weights left.  This is now caught, with a warning unless
+      new option \code{check.f} is set to false.  See new example \code{mc3}.
+
+      \item the platform dependent tests in \file{../tests/SP500-ex.R} now
+      should also work on Solaris 32-bit.
     }
   }
+}
+
+\section{Changes in version 0.95-1 (2019-05-09)}{
   \subsection{Testing}{
     \itemize{
       \item modularized partly platform dependent testing into
-      \code{moreSessionInfo()} in \file{./xtraR/platform-sessionInfo.R}.
+      \code{moreSessionInfo()} in \file{./xtraR/platform-sessionInfo.R};
+      updated to newest version from robustbase (so to detect KH's debian
+      OpenBLAS setup).
     }
   }
 }

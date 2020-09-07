@@ -4,7 +4,7 @@ source(system.file("xtraR", "platform-sessionInfo.R", # <<- ../inst/xtraR/platfo
 		   package = "CLA", mustWork=TRUE)) # moreSessionInfo(), withAutoprint() ..
 mS <- moreSessionInfo(print. = TRUE)
 
-data(muS.sp500)
+data(muS.sp500)# not 500, but 476 assets
 
 if(requireNamespace("FRAPO")) {
     data(SP500, package = "FRAPO")
@@ -16,6 +16,11 @@ system.time(# ~ 9 sec (64-bit); 13.8 sec (32-b florence); seen 27.44 sec on Winb
     CLs5c.0.120 <- CLA(muS.sp500$mu, muS.sp500$covar, lB=0, uB=1/20)
 )
 CLs5c.0.120 # -> print() method
+ws <- CLs5c.0.120$weights_set
+table(rowSums(ws) > 0)
+## FALSE  TRUE
+##   397    79  == we check below that indeed  79 assets have some non-0 wts
+
 
 uncall <- function(x) `$<-`(x, call, NULL)
 
@@ -57,7 +62,7 @@ if(require(Matrix)) withAutoprint(local = FALSE, {
     image(spWts, xlab = "turning point", ylab = "asset number")
     ##
     dim(spWts.non0 <- spWts[rowSums(spWts) > 0 , ])
-    round(1000 * spWts.non0)
+    round(1000 * spWts.non0) ##-> e.g. ./Solaris_wts_non0.txt ==> readWn0()
     ##
     image(spWts.non0, xlab = "turning point", ylab = "asset number")
     wts.non0 <- as(spWts.non0, "matrix")
@@ -68,6 +73,38 @@ if(require(Matrix)) withAutoprint(local = FALSE, {
         colnames(wts.non0) <- rep("", ncol(wts.non0))
     print.table(round(1000 * wts.non0), zero.print=".")
 }
+
+##' To read the output from the above round(1000*spWts.non) into a (non-sparse) matrix:
+readWn0 <- function(txtfile) {
+    stopifnot(file.exists(txtfile))
+    lns <- strsplit((ln <- readLines(txtfile)), split = " +")
+    n <- unique(lengths(lns))
+    if(length(n) != 1)
+        stop("number of 'words' in each line differ:", paste(n, collapse=", "))
+    nms <- lapply(lns, `[[`, 1)
+    rnls <- lapply(lns, `[`, -1L) # the non-names, i.e. round(1000 * wts[])
+    w1000 <- setNames(rnls, nms)
+    nr_non0 <- vapply(w1000, function(ch) sum(ch != "."), 1L)
+    list(nr_non0=nr_non0, w1000=w1000)
+}
+if(FALSE) { # private file
+    rr <- readWn0(txtfile = "./SP5c_Solaris_wts_non0.txt")
+    rr <- readWn0(txtfile = "./SP5c_Win32_wts_non0.txt")
+    nr_non0 <- rr$nr_non0
+    ## compare with b64.n0, to construct  'S10.b32.n0' :
+    ## same length (== 79)  *and* same names :
+    stopifnot(identical(names(nr_non0), names(b64.n0)))
+    d <- nr_non0 - b64.n0
+    d[d != 0] # Solaris: the first, ADSK is 2, all others are 1 ..
+    all((d1 <- d[d != 0][-1]) == 1) # TRUE
+    dput(names(d1)) # the names for the '1' ..
+    ## Win 32: 1 2 -1 1  ... 1 2 1 1 -- win 32 is really "big" differing:
+    ##     table(d) .. only 23 do *not* differ
+    ## -1  0  1  2
+    ##  5 23 49  2     majority (49 of 79): "+1"
+}
+
+
 options(op)
 stopifnot(nrow(wts.non0) == 79)
 if(FALSE) # once, manually (into tests/ directory
@@ -108,9 +145,9 @@ b64.n0 <-
       X = 43L, XTO = 102L)
 
 ## 32-bit Linux (Unfortunately, currently  the results are slighly *platform dependent*)
+b32.n0 <- b64.n0
 nn <- c("AZO", "BAX", "CLX", "COST", "DGX",  "DVN", "ESRX", "LMT", "MUR", "PEP",
         "RIG", "SYMC", "TYC", "UST")
-b32.n0 <- b64.n0
 b32.n0[nn]  <- b64.n0[nn] + 1L
 nn <- c("AET", "BCR", "CI", "CL", "ED", "FE", "HAL", "MCD", "SII", "SYK")
 b32.n0[nn]  <- b64.n0[nn] - 1L
@@ -124,8 +161,40 @@ nn <- c("ADSK", "BCR", "BDX", "BUD", "CTL", "FE", "MCD", "SII", "SYK")
 b64nLD.n0[nn] <- b64.n0[nn] - 1L
 b64nLD.n0[["XTO"]] <- 99L # = b...  - 3L
 
-non.0.TARG <- if(mS$ b64) { if(mS$ b64nLD) b64nLD.n0 else b64.n0
-              } else b32.n0
+## 'Solaris 10'  [MM: from CRAN output, see ./SP5c_Solaris_wts_non0.txt]
+S10.b32.n0 <- b64.n0
+S10.b32.n0["ADSK"] <- b64.n0["ADSK"] + 2L
+nn <- c("AYE", "AZO", "BRL", "CLX", "CVS", "DF", "DVN", "ESRX", "HST",
+        "HUM", "K", "LMT", "MDT", "NOC", "PBG", "PDCO", "PEP", "PG",
+        "RIG", "RTN", "SSP", "SYMC", "TYC", "WAG", "WFR")
+S10.b32.n0[nn] <- b64.n0[nn] + 1L
+
+## Windows 32 bit : MM:  see ./Win32_wts_non0.txt
+win.b32.n0 <- b64.n0 + 1L ## +1: is majority
+Dlis <- list(
+    `-2` = c("AET", "CI", "FE", "SII", "SYK"),
+    `-1` = c("AMGN", "AYE", "BCR", "BDX", "BUD", "CL", "CTL", "CVS", "DF",
+             "ED", "EIX", "ESRX", "GILD", "HAL", "HST", "LLL", "MCD", "MMC",
+             "NEM", "PDCO", "PG", "RAI", "WMT"),
+    `1` = c("ADSK", "WFR"))
+for(nD in names(Dlis)) {
+    nms <- Dlis[[nD]]
+    win.b32.n0[nms] <- win.b32.n0[nms] + as.integer(nD)
+}
+
+non.0.TARG <- if(mS$ b64) {
+                  if(mS$ b64nLD)
+                      b64nLD.n0
+                  else
+                      b64.n0
+              } else {
+                  if(mS$ osVersion == "Solaris 10")
+                      S10.b32.n0
+                  else if(.Platform$OS.type == "windows")
+                      win.b32.n0
+                  else # notably 32-bit Linux
+                      b32.n0
+              }
 
 ## see on all platforms what we get;  typically no diff on 64bit *and* using R's BLAS/Lapack
 if(all(non.0.assets == non.0.TARG)) { ## show differences:
@@ -137,12 +206,6 @@ if(all(non.0.assets == non.0.TARG)) { ## show differences:
     cat("\n'non.0.assets' differing from non.0.TARG:\n")
     cat("+1:\n"); dput(names(b64.n0)[non.0.assets - non.0.TARG == +1])
     cat("-1:\n"); dput(names(b64.n0)[non.0.assets - non.0.TARG == -1])
-    ## solaris :
-      ## +1:
-      ## c("AET", "BCR", "CI", "CL", "ED", "FE", "HAL", "MCD", "SII", "SYK")
-      ## -1:
-      ## c("AZO", "BAX", "CLX", "COST", "DGX", "DVN", "ESRX", "LMT", "MUR",
-      ##   "PEP", "RIG", "SYMC", "TYC", "UST")
     ## ATLAS :
       ## +1:
       ## c("AZO", "BRL", "CCE", "CLX", "INTU", "JNJ", "K", "LMT", "MUR",
@@ -161,7 +224,7 @@ if(all(non.0.assets == non.0.TARG)) { ## show differences:
       ## c("BCR", "CI", "CTL", "ED", "EIX", "HAL", "MCD", "RAI", "SYK")
 
     if(any(isB <- abs(non.0.assets - non.0.TARG) > 1)) {
-        cat("more different, showing differences:\n")
+        cat("more different (than just +/- 1), showing differences:\n")
         dput((non.0.assets - non.0.TARG)[isB])
     }
     ## OpenBLAS (only!):
@@ -172,10 +235,17 @@ if(all(non.0.assets == non.0.TARG)) { ## show differences:
 stopifnot(exprs = {
     identical(names(b64.n0), names(b32.n0))
 
-    if(mS$ b64) !strict || identical(non.0.assets, non.0.TARG) # identical(*) fails on ATLAS, MKL, OpenBLAS
-    else if(.Platform$OS.type != "windows") identical(non.0.assets, b32.n0)
-    else ## 32-bit Windows
-        TRUE ## for now
+### Simplification:  Above have  non.0.TARG   already  platform dependently
+
+    ## if(mS$ b64) # "!strict || " :  identical(*) fails on ATLAS, MKL, OpenBLAS
+        !strict || identical(non.0.assets, non.0.TARG)
+    ## else ## 32-bit
+    ##     if(.Platform$OS.type == "windows")
+    ##         identical(non.0.assets, win.b32.n0)
+    ## else if(mS$ osVersion == "Solaris 10")
+    ##     identical(non.0.assets, S10.b32.n0)
+    ## else ## all other 32-bit, notably Linux
+    ##     identical(non.0.assets, b32.n0)
 
     differWts || identical(head(CLs5c.0.120$free_indices, 12),
               list(c(295L, 453L), 453L, c(453L, 472L), c(19L, 453L, 472L),
@@ -189,6 +259,7 @@ stopifnot(exprs = {
 claStrip <- function(res) {
     class(res) <- NULL
     res$call <- NULL
+    res$emptyLambdas <- NULL
     res$weights_set <- unname(res$weights_set)
     names(res)[[match("MS_weights", names(res))]] <- "MS_weight" # "MS_weights" w/ final "s"
     res
@@ -225,3 +296,4 @@ if(is.environment(e9 <- nsCLA$Env9)) local(withAutoprint({
         stopifnot(all.equal(claDrop1st(r9), rCLA, tol = 1e-14)) # they are the same!
     else cat("#{columns} differ in r9\n")
 }))
+
