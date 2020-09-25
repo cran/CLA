@@ -162,12 +162,14 @@ b64nLD.n0[nn] <- b64.n0[nn] - 1L
 b64nLD.n0[["XTO"]] <- 99L # = b...  - 3L
 
 ## 'Solaris 10'  [MM: from CRAN output, see ./SP5c_Solaris_wts_non0.txt]
+##
+## ===> 2020-08: Solaris 10, 32-bit   is *exactly*  as  Linux 64-bit
 S10.b32.n0 <- b64.n0
-S10.b32.n0["ADSK"] <- b64.n0["ADSK"] + 2L
-nn <- c("AYE", "AZO", "BRL", "CLX", "CVS", "DF", "DVN", "ESRX", "HST",
-        "HUM", "K", "LMT", "MDT", "NOC", "PBG", "PDCO", "PEP", "PG",
-        "RIG", "RTN", "SSP", "SYMC", "TYC", "WAG", "WFR")
-S10.b32.n0[nn] <- b64.n0[nn] + 1L
+## S10.b32.n0["ADSK"] <- b64.n0["ADSK"] + 2L
+## nn <- c("AYE", "AZO", "BRL", "CLX", "CVS", "DF", "DVN", "ESRX", "HST",
+##         "HUM", "K", "LMT", "MDT", "NOC", "PBG", "PDCO", "PEP", "PG",
+##         "RIG", "RTN", "SSP", "SYMC", "TYC", "WAG", "WFR")
+## S10.b32.n0[nn] <- b64.n0[nn] + 1L
 
 ## Windows 32 bit : MM:  see ./Win32_wts_non0.txt
 win.b32.n0 <- b64.n0 + 1L ## +1: is majority
@@ -187,7 +189,7 @@ non.0.TARG <- if(mS$ b64) {
                       b64nLD.n0
                   else
                       b64.n0
-              } else {
+              } else { # 32 bit
                   if(mS$ osVersion == "Solaris 10")
                       S10.b32.n0
                   else if(.Platform$OS.type == "windows")

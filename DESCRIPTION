@@ -1,6 +1,6 @@
 Package: CLA
-Version: 0.96-0
-Date: 2020-09-07
+Version: 0.96-1
+Date: 2020-09-19
 Title: Critical Line Algorithm in Pure R
 Author: Yanhao Shi <syhelena@163.com>,
 	Martin Maechler <maechler@stat.math.ethz.ch>
@@ -15,6 +15,6 @@ License: GPL (>= 3) | file LICENSE
 Encoding: UTF-8
 URL: https://gitlab.math.ethz.ch/maechler/CLA/
 NeedsCompilation: no
-Packaged: 2020-09-07 15:03:17 UTC; maechler
+Packaged: 2020-09-19 19:22:29 UTC; maechler
 Repository: CRAN
-Date/Publication: 2020-09-07 16:10:08 UTC
+Date/Publication: 2020-09-25 10:00:14 UTC

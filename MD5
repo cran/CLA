@@ -1,4 +1,4 @@
-53e453baf5d0e890da223256b75cb9c0 *DESCRIPTION
+2be869ade8ae777f7d3d98e206007a8c *DESCRIPTION
 0f8952946291e6f083553ea5594bf4c4 *LICENSE
 92331055d5ce131642ca3f22da9c9401 *NAMESPACE
 6807f29369c23e9a7d5d42fb6ae93a17 *R/Auxiliaries.R
@@ -10,7 +10,7 @@ d5f4802f25daad1cc5239a6f69ef6f2d *R/Fenv.R
 4dbc9f200fbe9beb38d2c95294aa5395 *R/muSigmaGarch.R
 0e726966c0774a979c68dba1bcc77751 *README.md
 fbec2e3ea488d487c3cf7b748253ae81 *TODO
-f117940a88c034345515055f362296fd *build/partial.rdb
+b63ac25eb3147fdde441f59fbff1adaa *build/partial.rdb
 0e170acceaa505db18109f35dd319b06 *data/datalist
 40220e5fd5761a87b6c82d643295a2bb *data/muS.10ex.rda
 cc397e49de11b7601bfa194e83163d44 *data/muS.sp500.rda
@@ -26,6 +26,6 @@ c6e3653075649aad2848223141de23f3 *man/findMu.Rd
 58b004ce949485b4713966332cca331f *man/muS.sp500.Rd
 ad8e9f1cacf40cbef2ec39c7a446db28 *man/muSigmaGarch.Rd
 aa0f96e0539524b42905e1eab6bb0939 *man/plot.CLA.Rd
-f4a05fc63a75e06526740f3f0fe2a5e1 *tests/SP500-ex.R
+97237b0977fbb540f935973559e3bda7 *tests/SP500-ex.R
 1e45479f85895892b3703fef23022aef *tests/findSigMu-ex.R
 7076f5198f2abf691abeb08778c963a5 *tests/wtsn0.rds
