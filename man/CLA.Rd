@@ -53,6 +53,14 @@ CLA(mu, covar, lB, uB,
   also when the number of assets \eqn{n} is large (1000s), though that
   depends quite a bit on the exact problem.
 }
+\note{
+  The exact results of the algorithm, e.g., the assets with non-zero
+  weights, may slightly depend on the (computer) platform, e.g., for the
+  \acronym{S&P 500} example, differences between 64-bit or 32-bit, version
+  of BLAS or Lapack libraries etc, do have an influence, see the \R script
+  \file{tests/SP500-ex.R} %  ../tests/SP500-ex.R}
+  in the package sources.
+}
 \value{
   an object of \code{\link{class}} \code{"CLA"} which is a
   \code{\link{list}} with components

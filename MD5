@@ -1,4 +1,4 @@
-2be869ade8ae777f7d3d98e206007a8c *DESCRIPTION
+7386ff54f6586c6628bc33db380e2f48 *DESCRIPTION
 0f8952946291e6f083553ea5594bf4c4 *LICENSE
 92331055d5ce131642ca3f22da9c9401 *NAMESPACE
 6807f29369c23e9a7d5d42fb6ae93a17 *R/Auxiliaries.R
@@ -10,15 +10,15 @@ d5f4802f25daad1cc5239a6f69ef6f2d *R/Fenv.R
 4dbc9f200fbe9beb38d2c95294aa5395 *R/muSigmaGarch.R
 0e726966c0774a979c68dba1bcc77751 *README.md
 fbec2e3ea488d487c3cf7b748253ae81 *TODO
-b63ac25eb3147fdde441f59fbff1adaa *build/partial.rdb
+75465356747fd8db4a620380bc87150e *build/partial.rdb
 0e170acceaa505db18109f35dd319b06 *data/datalist
 40220e5fd5761a87b6c82d643295a2bb *data/muS.10ex.rda
 cc397e49de11b7601bfa194e83163d44 *data/muS.sp500.rda
-9690054d426927666be7ccc107f53e9f *inst/NEWS.Rd
+827deec5773ca8dd4ae908a0ef3592fb *inst/NEWS.Rd
 62687dd54f4a9e66b7c3744ceccc061f *inst/xtraR/fGarch-mu-Sigma.R
-8b85449fe939e0c7b34b389c8e8f6307 *inst/xtraR/platform-sessionInfo.R
+7c927c8059d038266b2e74a32974f8d8 *inst/xtraR/platform-sessionInfo.R
 f238acd3b0bb7651bcea7778082392f3 *inst/xtraR/simple_10_asset-ex.R
-73f81107d40963bf9077d66578917ad1 *man/CLA.Rd
+a93396b2973fbbabcc6e24defb312b92 *man/CLA.Rd
 280c324facad3d68412e7897355e94d8 *man/MS.Rd
 c6e3653075649aad2848223141de23f3 *man/findMu.Rd
 56118cd40c4e4f657b642f2d48fa5930 *man/findSig.Rd
@@ -26,6 +26,6 @@ c6e3653075649aad2848223141de23f3 *man/findMu.Rd
 58b004ce949485b4713966332cca331f *man/muS.sp500.Rd
 ad8e9f1cacf40cbef2ec39c7a446db28 *man/muSigmaGarch.Rd
 aa0f96e0539524b42905e1eab6bb0939 *man/plot.CLA.Rd
-97237b0977fbb540f935973559e3bda7 *tests/SP500-ex.R
+bdfd03be13bb96afbf65788319e84031 *tests/SP500-ex.R
 1e45479f85895892b3703fef23022aef *tests/findSigMu-ex.R
-7076f5198f2abf691abeb08778c963a5 *tests/wtsn0.rds
+0817acfe2ace7fa9b37b73a66f19191c *tests/wtsn0.rds

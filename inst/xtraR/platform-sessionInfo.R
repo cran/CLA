@@ -15,7 +15,7 @@ moreSessionInfo <- function(print. = FALSE) {
     onWindows <- .Platform$OS.type == "windows"
     ## Do we have 64bit but no-long-double ?
     arch <- Sys.info()[["machine"]]
-    b64nLD <- (arch == "x86_64" && .M$sizeof.longdouble != 16)
+    b64nLD <- (b64 && .M$sizeof.longdouble != 16)
     if(b64nLD) arch <- paste0(arch, "--no-long-double")
     if(print.)
         cat(sprintf("%d bit platform type '%s'  ==> onWindows: %s\narch: %s\n",

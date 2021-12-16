@@ -4,7 +4,7 @@ source(system.file("xtraR", "platform-sessionInfo.R", # <<- ../inst/xtraR/platfo
 		   package = "CLA", mustWork=TRUE)) # moreSessionInfo(), withAutoprint() ..
 mS <- moreSessionInfo(print. = TRUE)
 
-data(muS.sp500)# not 500, but 476 assets
+data(muS.sp500)# not 500, but 476 assets <--> ../man/muS.sp500.Rd <<<
 
 if(requireNamespace("FRAPO")) {
     data(SP500, package = "FRAPO")
@@ -27,14 +27,14 @@ uncall <- function(x) `$<-`(x, call, NULL)
 doExtras <- TRUE  # for experiments, not normally
 doExtras <- FALSE
 
-if(doExtras) system.time({
+if(doExtras) {
+  system.time({
     tols <- 10^-c(1,3,5:9,11,14)
     names(tols) <- paste0("10^", round(log10(tols)))
     CLs5c.ls <- lapply(tols, function(tol)
         CLA(muS.sp500$mu, muS.sp500$covar, lB=0, uB=1/20, tol.lambda = tol))
-}) #  78.101 elapsed [nb-mm4] ; 46.108 [lynne 2018-10]
+  }) #  78.101 elapsed [nb-mm4] ; 46.108 [lynne 2018-10]
 
-if(doExtras) {
     identical(uncall(CLs5c.ls[["10^-7"]]), uncall(CLs5c.0.120))
     for(i in seq_along(tols)[-1]) {
         cat("--=--=--=--=--\n", (n1 <- names(tols[i-1])), " vs. ", (n2 <- names(tols[i])), ": ")
@@ -56,6 +56,8 @@ if(doExtras) {
 
 op <- options(width = max(500, getOption("width"))) # then it actually fits
 
+## Mostly keep the 79 assets with non-zero weights:
+## --->  wts.non0 { 79 x 161 } matrix
 if(require(Matrix)) withAutoprint(local = FALSE, {
     ## visualize how weights change "along turning points"
     spWts <- Matrix(CLs5c.0.120$weights_set, sparse=TRUE)
@@ -63,7 +65,7 @@ if(require(Matrix)) withAutoprint(local = FALSE, {
     ##
     dim(spWts.non0 <- spWts[rowSums(spWts) > 0 , ])
     round(1000 * spWts.non0) ##-> e.g. ./Solaris_wts_non0.txt ==> readWn0()
-    ##
+    ##    ~~~~~~~~~~~~~~~~~
     image(spWts.non0, xlab = "turning point", ylab = "asset number")
     wts.non0 <- as(spWts.non0, "matrix")
 }) else {
@@ -90,13 +92,14 @@ readWn0 <- function(txtfile) {
 if(FALSE) { # private file
     rr <- readWn0(txtfile = "./SP5c_Solaris_wts_non0.txt")
     rr <- readWn0(txtfile = "./SP5c_Win32_wts_non0.txt")
+    rr <- readWn0(txtfile = "./SP5c_M1mac_wts_non0.txt") # this is really special
     nr_non0 <- rr$nr_non0
     ## compare with b64.n0, to construct  'S10.b32.n0' :
     ## same length (== 79)  *and* same names :
     stopifnot(identical(names(nr_non0), names(b64.n0)))
     d <- nr_non0 - b64.n0
     d[d != 0] # Solaris: the first, ADSK is 2, all others are 1 ..
-    all((d1 <- d[d != 0][-1]) == 1) # TRUE
+    all((d1 <- d[d != 0][-1]) == 1) # TRUE  (FALSE for M1mac)
     dput(names(d1)) # the names for the '1' ..
     ## Win 32: 1 2 -1 1  ... 1 2 1 1 -- win 32 is really "big" differing:
     ##     table(d) .. only 23 do *not* differ
@@ -104,12 +107,64 @@ if(FALSE) { # private file
     ##  5 23 49  2     majority (49 of 79): "+1"
 }
 
+table(w.pos <- wts.non0 > 0)
+## FALSE  TRUE
+##  7808  4911
+summary(log10(c(wts.non0[w.pos])))
+## Lnx F34:
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+## -18.363  -1.816  -1.405  -1.688  -1.301  -1.301
+
+plot(ecdf(l10w <- log10(c(wts.non0[w.pos]))))
+abline(v = log10(1/20), col=2, lwd=2, lty=2) # weights upper boundary = 1/20 (here)
+rug(l10w) # wow, that's revealing!
+mtext(paste(sfsmisc::shortRversion(), osVersion, sep=" -- "))
+table(l10w < -10)
+## FALSE  TRUE
+##  4889    22 <-- get 23 (and different ones), for Lnx(64b) --no-long-double
+sum(l10w < -5) # the *same* 22 | 23
+round(sort(l10w[l10w < -10]), 1)
+## -18.4 ..... Lnx&Win64/32: -15.4 -15.1 -15.1 -14.8 // Lnx_noLD: -15.8 -15.4 -14.8 // M1: .. -16.0 -15.4 -15.4
+smll.e_10 <- 0 < wts.non0 & wts.non0 < 1e-10
+iSml <- which(smll.e_10, arr.ind = TRUE)
+iSml <- iSml[order(iSml[,1], iSml[,2]),]
+data.frame(iSml, wt = wts.non0[smll.e_10])
+##       row col           wt
+## ADSK    2   7 8.881784e-16
+## AET     3   4 1.776357e-15
+## AMGN    4 159 4.440892e-16
+## BCR     9  98 2.220446e-16
+## BDX    10 126 8.881784e-16
+## BUD    15 155 1.110223e-16
+## CI     18  32 5.551115e-17
+## CL     19  79 1.110223e-16
+## CTL    24 157 1.387779e-17
+## ED     29 130 1.387779e-17
+## EIX    30  15 5.551115e-17
+## FE     33  50 3.469447e-18
+## HAL    35 131 1.127570e-17
+## MCD    46  73 3.469447e-18
+## NEM    53 117 1.734723e-18
+## RAI    62  52 6.938894e-18
+## SII    66 119 2.775558e-17
+## SYK    68  63 6.938894e-18
+## WMT    77 156 3.469447e-18
+## XTO    79   3 2.602085e-18
+## XTO.1  79  12 4.336809e-19
+## XTO.2  79  96 8.673617e-19
+
+## NEW:: set all really small wts to zero ==> I expect everything will be platform independent!
+wts.non0[smll.e_10] <- 0 # !!
+##                    ===
+
+## from the 4911, now have 22 less:
+stopifnot(sum(w.pos <- wts.non0 > 0) == 4889)
 
 options(op)
 stopifnot(nrow(wts.non0) == 79)
 if(FALSE) # once, manually (into tests/ directory
     saveRDS(wts.non0, "wtsn0.rds")
-file.info("wtsn0.rds")$size  # 2702049
+file.info("wtsn0.rds")$size  # 26926
 wtsn0.ref <- readRDS("wtsn0.rds")
 
 ## see on all platforms what we get -- on OpenBLAS, the dim() differs !
@@ -128,126 +183,59 @@ if(differWts) {
 }
 non.0.assets <- Filter(function(.) . > 0, apply(wts.non0, 1, function(c) sum(c > 0)))
 
+## New (after zapping 22 very small weights):
+
 b64.n0 <-
-    c(AAPL = 135L, ADSK = 66L, AET = 147L, AMGN = 3L, ATI = 75L,
-      AYE = 56L, AZO = 26L, BAX = 95L, BCR = 35L, BDX = 36L, BIIB = 118L,
-      BNI = 86L, BRL = 23L, BTU = 27L, BUD = 7L, CCE = 54L, CELG = 128L,
-      CI = 69L, CL = 83L, CLX = 53L, CME = 140L, CNX = 16L, COST = 40L,
-      CTL = 5L, CVS = 102L, DF = 36L, DGX = 33L, DVN = 14L, ED = 32L,
-      EIX = 127L, ESRX = 48L, FCX = 54L, FE = 61L, GILD = 38L, HAL = 31L,
+    c(AAPL = 135L, ADSK = 65L, AET = 146L, AMGN = 2L, ATI = 75L,
+      AYE = 56L, AZO = 26L, BAX = 95L, BCR = 34L, BDX = 35L, BIIB = 118L,
+      BNI = 86L, BRL = 23L, BTU = 27L, BUD = 6L, CCE = 54L, CELG = 128L,
+      CI = 68L, CL = 82L, CLX = 53L, CME = 140L, CNX = 16L, COST = 40L,
+      CTL = 4L, CVS = 102L, DF = 36L, DGX = 33L, DVN = 14L, ED = 31L,
+      EIX = 126L, ESRX = 48L, FCX = 54L, FE = 60L, GILD = 38L, HAL = 30L,
       HES = 40L, HST = 108L, HUM = 71L, INTU = 48L, JNJ = 34L, K = 61L,
-      LH = 80L, LLL = 96L, LMT = 83L, LUK = 72L, MCD = 61L, MDT = 43L,
-      MMC = 7L, MON = 53L, MRO = 136L, MTW = 66L, MUR = 97L, NEM = 45L,
+      LH = 80L, LLL = 96L, LMT = 83L, LUK = 72L, MCD = 60L, MDT = 43L,
+      MMC = 7L, MON = 53L, MRO = 136L, MTW = 66L, MUR = 97L, NEM = 44L,
       NOC = 74L, NUE = 30L, NVDA = 13L, PBG = 72L, PCP = 102L, PDCO = 71L,
-      PEP = 69L, PG = 87L, RAI = 110L, RIG = 121L, RRC = 105L, RTN = 90L,
-      SII = 27L, SSP = 14L, SYK = 19L, SYMC = 13L, TEX = 36L, TIE = 84L,
-      TSO = 115L, TYC = 59L, UST = 127L, WAG = 17L, WFR = 5L, WMT = 6L,
-      X = 43L, XTO = 102L)
+      PEP = 69L, PG = 87L, RAI = 109L, RIG = 121L, RRC = 105L, RTN = 90L,
+      SII = 26L, SSP = 14L, SYK = 18L, SYMC = 13L, TEX = 36L, TIE = 84L,
+      TSO = 115L, TYC = 59L, UST = 127L, WAG = 17L, WFR = 5L, WMT = 5L,
+      X = 43L, XTO = 99L)
 
-## 32-bit Linux (Unfortunately, currently  the results are slighly *platform dependent*)
-b32.n0 <- b64.n0
-nn <- c("AZO", "BAX", "CLX", "COST", "DGX",  "DVN", "ESRX", "LMT", "MUR", "PEP",
-        "RIG", "SYMC", "TYC", "UST")
-b32.n0[nn]  <- b64.n0[nn] + 1L
-nn <- c("AET", "BCR", "CI", "CL", "ED", "FE", "HAL", "MCD", "SII", "SYK")
-b32.n0[nn]  <- b64.n0[nn] - 1L
-
-## 64-bit Linux  -no-long-double:
-b64nLD.n0 <- b64.n0
-nn <- c("AZO", "BAX", "BNI", "CCE", "DVN", "GILD", "INTU", "JNJ", "LH",
-        "MDT", "NOC", "PBG", "SYMC")
-b64nLD.n0[nn] <- b64.n0[nn] + 1L
-nn <- c("ADSK", "BCR", "BDX", "BUD", "CTL", "FE", "MCD", "SII", "SYK")
-b64nLD.n0[nn] <- b64.n0[nn] - 1L
-b64nLD.n0[["XTO"]] <- 99L # = b...  - 3L
-
-## 'Solaris 10'  [MM: from CRAN output, see ./SP5c_Solaris_wts_non0.txt]
-##
-## ===> 2020-08: Solaris 10, 32-bit   is *exactly*  as  Linux 64-bit
-S10.b32.n0 <- b64.n0
-## S10.b32.n0["ADSK"] <- b64.n0["ADSK"] + 2L
-## nn <- c("AYE", "AZO", "BRL", "CLX", "CVS", "DF", "DVN", "ESRX", "HST",
-##         "HUM", "K", "LMT", "MDT", "NOC", "PBG", "PDCO", "PEP", "PG",
-##         "RIG", "RTN", "SSP", "SYMC", "TYC", "WAG", "WFR")
-## S10.b32.n0[nn] <- b64.n0[nn] + 1L
-
-## Windows 32 bit : MM:  see ./Win32_wts_non0.txt
-win.b32.n0 <- b64.n0 + 1L ## +1: is majority
-Dlis <- list(
-    `-2` = c("AET", "CI", "FE", "SII", "SYK"),
-    `-1` = c("AMGN", "AYE", "BCR", "BDX", "BUD", "CL", "CTL", "CVS", "DF",
-             "ED", "EIX", "ESRX", "GILD", "HAL", "HST", "LLL", "MCD", "MMC",
-             "NEM", "PDCO", "PG", "RAI", "WMT"),
-    `1` = c("ADSK", "WFR"))
-for(nD in names(Dlis)) {
-    nms <- Dlis[[nD]]
-    win.b32.n0[nms] <- win.b32.n0[nms] + as.integer(nD)
-}
 
 non.0.TARG <- if(mS$ b64) {
                   if(mS$ b64nLD)
-                      b64nLD.n0
+                      if(mS$arch == "arm64" && grepl("darwin", R.version$os)) # since Feb.2021 also for 'M1mac'
+                          b64.n0 # M1.b64.n0
+                      else
+                          b64.n0 # b64nLD.n0
                   else
                       b64.n0
               } else { # 32 bit
                   if(mS$ osVersion == "Solaris 10")
-                      S10.b32.n0
+                      b64.n0 # S10.b32.n0
                   else if(.Platform$OS.type == "windows")
-                      win.b32.n0
+                      b64.n0 # win.b32.n0
                   else # notably 32-bit Linux
-                      b32.n0
+                      b64.n0 # b32.n0
               }
 
 ## see on all platforms what we get;  typically no diff on 64bit *and* using R's BLAS/Lapack
 if(all(non.0.assets == non.0.TARG)) { ## show differences:
-    cat("Asset results == non.0.TARG;  showing differences b32 - b64 :\n")
-    print(table(b32.n0 -b64.n0))
-    dput(names(b64.n0)[b32.n0 -b64.n0 == +1])
-    dput(names(b64.n0)[b32.n0 -b64.n0 == -1])
-} else {
+    cat("Asset results == non.0.TARG\n")
+} else { ## (not seen anymore, since "zap < 1e-10"):
     cat("\n'non.0.assets' differing from non.0.TARG:\n")
     cat("+1:\n"); dput(names(b64.n0)[non.0.assets - non.0.TARG == +1])
     cat("-1:\n"); dput(names(b64.n0)[non.0.assets - non.0.TARG == -1])
-    ## ATLAS :
-      ## +1:
-      ## c("AZO", "BRL", "CCE", "CLX", "INTU", "JNJ", "K", "LMT", "MUR",
-      ##   "PEP", "SSP", "TYC", "UST", "XTO")
-      ## -1:
-      ## c("AET", "BCR", "CI", "ED", "FE", "MCD", "NEM", "SII", "SYK", "WMT")
-    ## MKL:
-      ## +1:
-      ## c("CLX", "INTU", "LH", "LLL", "LMT", "PBG", "SYMC", "TYC")
-      ## -1:
-      ## c("AMGN", "BCR", "BUD", "CL", "CTL", "ED", "HAL", "NEM", "XTO")
-    ## OpenBLAS:
-      ## +1:
-      ## c("BAX", "COST", "HST", "JNJ", "MDT", "MUR", "NOC", "PDCO", "WAG")
-      ## -1:
-      ## c("BCR", "CI", "CTL", "ED", "EIX", "HAL", "MCD", "RAI", "SYK")
 
     if(any(isB <- abs(non.0.assets - non.0.TARG) > 1)) {
         cat("more different (than just +/- 1), showing differences:\n")
         dput((non.0.assets - non.0.TARG)[isB])
     }
-    ## OpenBLAS (only!):
-      ## c(XTO = -2L)
 }
 
 ## They have the same names and only differ by  +/- 1:
 stopifnot(exprs = {
-    identical(names(b64.n0), names(b32.n0))
-
-### Simplification:  Above have  non.0.TARG   already  platform dependently
-
-    ## if(mS$ b64) # "!strict || " :  identical(*) fails on ATLAS, MKL, OpenBLAS
-        !strict || identical(non.0.assets, non.0.TARG)
-    ## else ## 32-bit
-    ##     if(.Platform$OS.type == "windows")
-    ##         identical(non.0.assets, win.b32.n0)
-    ## else if(mS$ osVersion == "Solaris 10")
-    ##     identical(non.0.assets, S10.b32.n0)
-    ## else ## all other 32-bit, notably Linux
-    ##     identical(non.0.assets, b32.n0)
+    !strict || identical(non.0.assets, non.0.TARG)
 
     differWts || identical(head(CLs5c.0.120$free_indices, 12),
               list(c(295L, 453L), 453L, c(453L, 472L), c(19L, 453L, 472L),
@@ -298,4 +286,3 @@ if(is.environment(e9 <- nsCLA$Env9)) local(withAutoprint({
         stopifnot(all.equal(claDrop1st(r9), rCLA, tol = 1e-14)) # they are the same!
     else cat("#{columns} differ in r9\n")
 }))
-

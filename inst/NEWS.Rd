@@ -4,6 +4,23 @@
 \title{News for \R Package \pkg{CLA}}% MM: look into ../svn-log-from.all
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.96-2 (2021-12-14)}{
+  \subsection{Tweaks}{
+    \itemize{
+      \item \file{../tests/SP500-ex.R} tweaks to pass on 'M1mac' (Mac "Big Sur" M1 proc. arm64)
+      \item \file{../tests/SP500-ex.R}: new main tweak: set all weights < 1e-10 to zero .
+    }
+  }
+}
+
+\section{Changes in version 0.96-1 (2020-09-19)}{
+  \subsection{Tweaks}{
+    \itemize{
+      \item Should finally work on Solaris 32-bit
+    }
+  }
+}
+
 \section{Changes in version 0.96-0 (2020-09-06)}{
   \subsection{New Features}{
     \itemize{
