@@ -4,6 +4,14 @@
 \title{News for \R Package \pkg{CLA}}% MM: look into ../svn-log-from.all
 \newcommand{\CRANpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.96-3 (2024-07-29)}{
+  \subsection{Tweaks}{
+    \itemize{
+      \item \file{../DESCRIPTION} now uses \code{Authors@R}.
+    }
+  }
+}
+
 \section{Changes in version 0.96-2 (2021-12-14)}{
   \subsection{Tweaks}{
     \itemize{

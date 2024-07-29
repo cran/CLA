@@ -24,7 +24,7 @@ muSigmaGarch <- function(x,
     gPRED <- fGarch::predict
     gpredict <- t(sapply(gfit, gPRED, n.ahead = 1))
     mu <- -unlist(gpredict[, "meanForecast"])
-    sd <- unlist(gpredict[, "standardDeviation"])
+    sd <-  unlist(gpredict[, "standardDeviation"])
     x.std <- sapply(1:nA, function(i) lr[,i]/gfit[[i]]@sigma.t)
     ## diag.sd <- diag(sd)
     V <- cor(x.std, ...) # including names

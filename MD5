@@ -1,4 +1,4 @@
-7386ff54f6586c6628bc33db380e2f48 *DESCRIPTION
+f67bb6b75bff196738cd95c5da25e670 *DESCRIPTION
 0f8952946291e6f083553ea5594bf4c4 *LICENSE
 92331055d5ce131642ca3f22da9c9401 *NAMESPACE
 6807f29369c23e9a7d5d42fb6ae93a17 *R/Auxiliaries.R
@@ -7,14 +7,14 @@ d5f4802f25daad1cc5239a6f69ef6f2d *R/Fenv.R
 5df22ffbfd27cb038c2be63955c4e73d *R/Ver8.R
 40a0acc69c15ad4aeb5cdd1fec3c48d1 *R/Ver9.R
 70cac219599038fb4f2fe1fc74526d76 *R/findSigMu.R
-4dbc9f200fbe9beb38d2c95294aa5395 *R/muSigmaGarch.R
+d5029b6bd33159ed9ab4746b53249ca4 *R/muSigmaGarch.R
 0e726966c0774a979c68dba1bcc77751 *README.md
 fbec2e3ea488d487c3cf7b748253ae81 *TODO
-75465356747fd8db4a620380bc87150e *build/partial.rdb
+e23903adc990d9515ba1ebd23e3bff59 *build/partial.rdb
 0e170acceaa505db18109f35dd319b06 *data/datalist
 40220e5fd5761a87b6c82d643295a2bb *data/muS.10ex.rda
 cc397e49de11b7601bfa194e83163d44 *data/muS.sp500.rda
-827deec5773ca8dd4ae908a0ef3592fb *inst/NEWS.Rd
+8521fe25a2dc7601959e1427cbb2ceef *inst/NEWS.Rd
 62687dd54f4a9e66b7c3744ceccc061f *inst/xtraR/fGarch-mu-Sigma.R
 7c927c8059d038266b2e74a32974f8d8 *inst/xtraR/platform-sessionInfo.R
 f238acd3b0bb7651bcea7778082392f3 *inst/xtraR/simple_10_asset-ex.R
